@@ -1,6 +1,6 @@
 package com.acme.estore.user.ws.dto;
 
-public class AddressDTO {
+public class AddressDTO  {
 
 	private String addressId;
 	private String city;

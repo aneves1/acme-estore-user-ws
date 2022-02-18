@@ -5,5 +5,6 @@ import java.util.List;
 import com.acme.estore.user.ws.dto.AddressDTO;
 
 public interface AddressService {
-	List<AddressDTO> getAddress(String usersId);
+	List<AddressDTO> getAddresses(String usersId);
+	AddressDTO getAddress(String addressId);
 }

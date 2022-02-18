@@ -11,4 +11,5 @@ import com.acme.estore.user.ws.io.entity.UserEntity;
 @Repository
 public interface AddressRepository extends CrudRepository<AddressEntity, Long> {
 	List<AddressEntity> findAllByUserDto(UserEntity userDto);
+	AddressEntity findByAddressId(String addressId);
 }

@@ -6,7 +6,6 @@ public class UserDTO {
 	private String userId;
 	private String firstName;
 	private String lastName;
-	private String userName;
 	private String password;
 	private String email;
 	private String emailVerificationToken;
@@ -46,14 +45,6 @@ public class UserDTO {
 
 	public void setEmailVerificatinStatus(Boolean emailVerificatinStatus) {
 		this.emailVerificatinStatus = emailVerificatinStatus;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
 	}
 
 	public String getPassword() {

@@ -1,13 +1,19 @@
 package com.acme.estore.user.ws.controller;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +37,9 @@ import com.acme.estore.user.ws.model.UserResponse;
 import com.acme.estore.user.ws.service.AddressService;
 import com.acme.estore.user.ws.service.UserService;
 
+
 @RestController
-@RequestMapping("user")
+@RequestMapping("/user")
 public class UserController {
 	
 	@Autowired
@@ -43,10 +50,11 @@ public class UserController {
 	
 	@GetMapping(path="/{userId}", produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public UserResponse getUser(@PathVariable String userId) {
-		UserResponse response = new UserResponse();
-		
+				
 		UserDTO userDTO = userService.getUserById(userId);
-		BeanUtils.copyProperties(userDTO, response);
+		
+		ModelMapper mapper = new ModelMapper();
+		UserResponse response = mapper.map(userDTO, UserResponse.class);
 		
 		return response;
 	}
@@ -56,17 +64,17 @@ public class UserController {
 		produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
 		)
 	public UserResponse createUser(@RequestBody User user) throws UserServiceException {	
-		UserResponse response = new UserResponse();
 		
 		if (user.getFirstName().isEmpty()) {
 			throw new UserServiceException(ErrorMessage.MISSING_REQUIRED_FIELD.getErrorMessage());
 		}
 		
-		ModelMapper modelMapper = new ModelMapper();
-		UserDTO userDto = modelMapper.map(user, UserDTO.class);
+		ModelMapper mapper = new ModelMapper();
+		UserDTO userDto = mapper.map(user, UserDTO.class);
 		
 		UserDTO createdUser  = userService.createUser(userDto);
-		modelMapper.map(createdUser, response);		
+		
+		UserResponse response = mapper.map(createdUser, UserResponse.class);		
 		
 		return response;
 	}
@@ -81,11 +89,11 @@ public class UserController {
 			throw new UserServiceException(ErrorMessage.MISSING_REQUIRED_FIELD.getErrorMessage());
 		}
 		
-		UserDTO userDto = new UserDTO();
-		BeanUtils.copyProperties(user, userDto);
+		ModelMapper mapper = new ModelMapper();
+		UserDTO userDTO = mapper.map(user, UserDTO.class);
 		
-		UserDTO updateUser  = userService.updateUser(userId, userDto);
-		BeanUtils.copyProperties(updateUser, response);		
+		UserDTO updatedUser  = userService.updateUser(userId, userDTO);
+		mapper.map(updatedUser, UserResponse.class);
 		
 		return response;
 	}
@@ -117,21 +125,51 @@ public class UserController {
 	}
 	
 	@GetMapping(path="/{userId}/addresses",
-			consumes= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
-			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
-	public List<AddressResponse> getUserAddresses(@RequestParam(value="userId") String userId) {
-		List<AddressResponse> response = new ArrayList<>();
+			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, "application/hal+json"})
+	public CollectionModel<AddressResponse> getUserAddresses(@PathVariable String userId) {
+		List<AddressResponse> addresses = new ArrayList<>();
 		
-		java.lang.reflect.Type listType = new TypeToken<List<AddressResponse>>() {}.getType();
+		List<AddressDTO> addressDTO = addressService.getAddresses(userId);
 		
-		List<AddressDTO> addressDTO = addressService.getAddress(userId);
+		if (Optional.ofNullable(addressDTO).isPresent()) {
+			java.lang.reflect.Type listType = new TypeToken<List<AddressResponse>>() {}.getType();		
+			addresses = new ModelMapper().map(addressDTO, listType);
+			
+			for (AddressResponse address : addresses) {
+				Link selfLink = WebMvcLinkBuilder.linkTo(methodOn(UserController.class).getUserAddress(userId, address.getAddressId())).withSelfRel();
+				address.add(selfLink);
+			}
+			
+		}
+	
+		Link userLink = WebMvcLinkBuilder.linkTo(methodOn(UserController.class).getUser(userId)).withRel("user");
+		Link selfLink = WebMvcLinkBuilder.linkTo(methodOn(UserController.class).getUserAddresses(userId)).withSelfRel();
 		
-		ModelMapper mapper = new ModelMapper();
-		response = mapper.map(addressDTO, listType);
-		
-		
-		return response;
+		return CollectionModel.of(addresses, userLink, selfLink);
 		
 	}
 
+	@GetMapping(path="/{userId}/address/{addressId}",
+			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+	public EntityModel<AddressResponse> getUserAddress(@PathVariable String userId, @PathVariable String addressId) {
+		
+		AddressDTO addressesDTO = addressService.getAddress(addressId);
+		
+		ModelMapper mapper = new ModelMapper();
+		AddressResponse address = mapper.map(addressesDTO, AddressResponse.class);
+		
+		
+        EntityModel<AddressResponse> entityModel = EntityModel.of(address);
+        Link addressLink = WebMvcLinkBuilder.linkTo(methodOn(UserController.class).getUserAddress(userId, addressId)).withSelfRel();
+        Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel("user");
+        Link addressesLink = WebMvcLinkBuilder.linkTo(methodOn(UserController.class).getUserAddresses(userId)).withRel("addresses");
+        
+        
+        entityModel.add(addressLink);
+        entityModel.add(userLink);
+        entityModel.add(addressesLink);
+		
+		return entityModel;
+		
+	}
 }

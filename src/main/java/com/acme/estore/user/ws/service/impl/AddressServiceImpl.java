@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
 import com.acme.estore.user.ws.dto.AddressDTO;
@@ -24,7 +26,7 @@ public class AddressServiceImpl implements AddressService {
 	AddressRepository addressRepository;
 
 	@Override
-	public List<AddressDTO> getAddress(String usersId) {
+	public List<AddressDTO> getAddresses(String usersId) {
 		List<AddressDTO> result = new ArrayList<>();
 		
 		UserEntity userEntity = userRepository.findByUserId(usersId);
@@ -32,12 +34,26 @@ public class AddressServiceImpl implements AddressService {
 		
 		List<AddressEntity> addresses = addressRepository.findAllByUserDto(userEntity);
 		
+		
+		ModelMapper modelMapper = new ModelMapper();
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		
 		for (AddressEntity address : addresses) {
-			result.add(new ModelMapper().map(address, AddressDTO.class));
+			result.add(modelMapper.map(address, AddressDTO.class));
 		}
 		
-		
 		return result;
+	}
+	
+	@Override
+	public AddressDTO getAddress(String addressId) {
+		
+		AddressEntity addressEntity = addressRepository.findByAddressId(addressId);
+		
+		ModelMapper mapper = new ModelMapper();
+		AddressDTO addressDTO = mapper.map(addressEntity, AddressDTO.class);
+		
+		return addressDTO;
 	}
 
 }

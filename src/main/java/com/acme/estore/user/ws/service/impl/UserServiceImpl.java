@@ -39,6 +39,14 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	BCryptPasswordEncoder bCryptPasswordEncoder;
 	
+	/**
+	 * Creates the user from the JSON/XML request pay-load provided by the client
+	 * Note: At least one address must be provided or a NullPointer Exception will occur.
+	 * 
+	 * @param UserDTO:  The user data transfer object that contains the requested user information pay-load
+	 * @return UserDTO: The result that was entered into the database.
+	 */
+	
 	@Override
 	public UserDTO createUser(UserDTO userDto) {
 			
@@ -46,6 +54,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserServiceException(ErrorMessage.RECORD_ALREADY_EXIST.getErrorMessage());
 		}
 		
+		// getAddress() must not return null
 		for(int i=0; i < userDto.getAddress().size(); i++) {
 			AddressDTO address = userDto.getAddress().get(i);
 			address.setUserDto(userDto);
@@ -86,16 +95,19 @@ public class UserServiceImpl implements UserService {
 		if (userEntity == null) {
 			throw new UserServiceException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
 		}
+
+// Issues with mapper here: Converter org.modelmapper.internal.converter.MergingCollectionConverter@77e4d335 failed to convert org.hibernate.collection.internal.PersistentBag to java.util.List
+//		ModelMapper mapper = new ModelMapper();
+//		UserDTO userDTO = mapper.map(userEntity, UserDTO.class);
 		
 		UserDTO userDTO = new UserDTO();
-		BeanUtils.copyProperties(userEntity, userDTO);
+		BeanUtils.copyProperties(userEntity, userDTO);		
 		
 		return userDTO;
 		
 	}
 	
 	public UserDTO getUserById(String userId) {
-		UserDTO userDTO = new UserDTO();
 		
 		UserEntity userEntity = userRepository.findByUserId(userId);
 		
@@ -103,14 +115,15 @@ public class UserServiceImpl implements UserService {
 			throw new UserServiceException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
 		}
 		
-		BeanUtils.copyProperties(userEntity, userDTO);
+		ModelMapper mapper = new ModelMapper();
+		UserDTO userDTO = mapper.map(userEntity, UserDTO.class);
+		
 		
 		return userDTO;
 		
 	}
 	
 	public UserDTO updateUser(String userId, UserDTO userDto) {
-		UserDTO userDTO = new UserDTO();
 		
 		UserEntity userEntity = userRepository.findByUserId(userId);
 		
@@ -123,8 +136,8 @@ public class UserServiceImpl implements UserService {
 		
 		UserEntity updatedUser = userRepository.save(userEntity);
 		
-		
-		BeanUtils.copyProperties(updatedUser, userDTO);
+		ModelMapper mapper = new ModelMapper();
+		UserDTO userDTO = mapper.map(updatedUser, UserDTO.class);
 		
 		return userDTO;
 	}

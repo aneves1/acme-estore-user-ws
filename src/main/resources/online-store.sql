@@ -1,5 +1,3 @@
-CREATE DATABASE `online_store` /*!40100 DEFAULT CHARACTER SET latin1 */;
-
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(250) DEFAULT NULL,
