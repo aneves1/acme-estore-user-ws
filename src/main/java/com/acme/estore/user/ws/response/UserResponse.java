@@ -1,4 +1,4 @@
-package com.acme.estore.user.ws.model;
+package com.acme.estore.user.ws.response;
 
 import java.util.List;
 

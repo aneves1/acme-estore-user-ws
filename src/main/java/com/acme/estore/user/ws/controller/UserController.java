@@ -28,12 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.acme.estore.user.ws.dto.AddressDTO;
 import com.acme.estore.user.ws.dto.UserDTO;
 import com.acme.estore.user.ws.exception.UserServiceException;
-import com.acme.estore.user.ws.model.AddressResponse;
 import com.acme.estore.user.ws.model.ErrorMessage;
 import com.acme.estore.user.ws.model.OperationStatus;
-import com.acme.estore.user.ws.model.OperationStatusResponse;
 import com.acme.estore.user.ws.model.User;
-import com.acme.estore.user.ws.model.UserResponse;
+import com.acme.estore.user.ws.request.RequestOperation;
+import com.acme.estore.user.ws.response.AddressResponse;
+import com.acme.estore.user.ws.response.OperationStatusResponse;
+import com.acme.estore.user.ws.response.UserResponse;
 import com.acme.estore.user.ws.service.AddressService;
 import com.acme.estore.user.ws.service.UserService;
 

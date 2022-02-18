@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.acme.estore.user.ws.SpringApplicationContext;
 import com.acme.estore.user.ws.dto.UserDTO;
-import com.acme.estore.user.ws.model.UserLoginRequest;
+import com.acme.estore.user.ws.request.UserLoginRequest;
 import com.acme.estore.user.ws.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
