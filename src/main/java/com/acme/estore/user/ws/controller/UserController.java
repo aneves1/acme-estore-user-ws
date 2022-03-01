@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -31,7 +33,10 @@ import com.acme.estore.user.ws.exception.UserServiceException;
 import com.acme.estore.user.ws.model.ErrorMessage;
 import com.acme.estore.user.ws.model.OperationStatus;
 import com.acme.estore.user.ws.model.User;
+import com.acme.estore.user.ws.request.PasswordResetRequest;
 import com.acme.estore.user.ws.request.RequestOperation;
+import com.acme.estore.user.ws.request.RequestOperationName;
+import com.acme.estore.user.ws.request.RequestOperationStatus;
 import com.acme.estore.user.ws.response.AddressResponse;
 import com.acme.estore.user.ws.response.OperationStatusResponse;
 import com.acme.estore.user.ws.response.UserResponse;
@@ -43,6 +48,8 @@ import com.acme.estore.user.ws.service.UserService;
 @RequestMapping("/user")
 public class UserController {
 	
+	private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+	
 	@Autowired
 	UserService userService;
 	
@@ -51,11 +58,15 @@ public class UserController {
 	
 	@GetMapping(path="/{userId}", produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public UserResponse getUser(@PathVariable String userId) {
-				
+			
+		LOGGER.info("Retrieving user details");
+		
 		UserDTO userDTO = userService.getUserById(userId);
 		
 		ModelMapper mapper = new ModelMapper();
 		UserResponse response = mapper.map(userDTO, UserResponse.class);
+		
+		LOGGER.info("Successfully retrieved user details");
 		
 		return response;
 	}
@@ -172,5 +183,42 @@ public class UserController {
 		
 		return entityModel;
 		
+	}
+	
+	@GetMapping(path="/email-verification", produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+	public OperationStatusResponse verifyEmailToken(@RequestParam(value="token") String token) {
+		OperationStatusResponse result = new OperationStatusResponse();
+		
+		result.setName(RequestOperationName.VERIFY_EMAIL.name());
+		
+		boolean  isVerified = userService.verifyEmailToken(token);
+		
+		if (isVerified) {
+			result.setStatus(OperationStatus.SUCCESS.name());
+		}
+		else {
+			result.setStatus(OperationStatus.ERROR.name());
+		}
+		
+		return result;
+	}
+	
+	@PostMapping(path="/password-reset",
+			consumes= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
+			produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
+			)
+	public OperationStatusResponse resetPassword(@RequestBody PasswordResetRequest resetPasswordRequest) throws UserServiceException {	
+		OperationStatusResponse response = new OperationStatusResponse();
+			
+		boolean result = userService.requestPasswordReset(resetPasswordRequest.getEmail());
+			
+		response.setName(RequestOperationName.REQUEST_PASSWORD_RESET.name());
+		response.setStatus(RequestOperationStatus.ERROR.name());
+			
+		if (result) {
+			response.setStatus(RequestOperationStatus.SUCCESS.name());
+		}
+			
+		return response;
 	}
 }

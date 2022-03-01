@@ -9,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+	
+	private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+	
 	private final AuthenticationManager authenticationManager;
 	
 	public AuthenticationFilter(AuthenticationManager authenticationManager) {
@@ -35,13 +40,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res) throws AuthenticationException {
 		
+		LOGGER.debug("Attempting to authenticate user");
+		
 		try {
 			UserLoginRequest credentials = new ObjectMapper().readValue(req.getInputStream(), UserLoginRequest.class);
 			
 			return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(), new ArrayList<>()));
 			
 		} catch (IOException e) {
+			LOGGER.error(e.getMessage());
 			throw new RuntimeException(e);
+		}
+		finally {
+			LOGGER.debug("Successfully authenticated user");
 		}
 		
 	}
