@@ -22,7 +22,7 @@ public class Utils {
 		return generateRandomString(length);
 	}
 	
-	public String generatedAddressId(int length) {
+	public String generateAddressId(int length) {
 		return generateRandomString(length);
 	}
 	

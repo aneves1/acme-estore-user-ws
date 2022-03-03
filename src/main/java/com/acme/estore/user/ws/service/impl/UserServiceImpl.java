@@ -1,7 +1,6 @@
 package com.acme.estore.user.ws.service.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -49,6 +47,7 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	PasswordResetTokenRepository passwordResetTokenRepository;
 	
+	
 	/**
 	 * Creates the user from the JSON/XML request pay-load provided by the client
 	 * Note: At least one address must be provided or a NullPointer Exception will occur.
@@ -71,7 +70,7 @@ public class UserServiceImpl implements UserService {
 			for(int i=0; i < userDto.getAddress().size(); i++) {
 				AddressDTO address = userDto.getAddress().get(i);
 				address.setUserDto(userDto);
-				address.setAddressId(utils.generatedAddressId(30));
+				address.setAddressId(utils.generateAddressId(30));
 				userDto.getAddress().set(i, address);
 			}
 		}
@@ -103,7 +102,7 @@ public class UserServiceImpl implements UserService {
 		UserEntity userEntity = userRepository.findByEmail(email);
 		
 		if (userEntity == null) {
-			throw new UserServiceException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
+			throw new UsernameNotFoundException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
 		}
 		
 		LOGGER.debug("Successfully Loaded user by user name");
@@ -122,7 +121,7 @@ public class UserServiceImpl implements UserService {
 		
 		if (userEntity == null) {
 			LOGGER.error(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
-			throw new UserServiceException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
+			throw new UsernameNotFoundException(ErrorMessage.NO_RECORD_FOUND.getErrorMessage());
 		}
 		
 		UserDTO userDTO = new UserDTO();

@@ -35,6 +35,7 @@ public class UserEntity implements Serializable {
 	@Column(name="user_password", nullable=false)
 	private String encryptedPassword;
 	
+	@Column(name="user_email_verification_token", nullable=false)
 	private String emailVerificationToken;
 	
 	@Column(name="user_email_verification_status", nullable=false)
@@ -99,7 +100,7 @@ public class UserEntity implements Serializable {
 
 
 	public void setEmailVerificationToken(String emailVerificationToken) {
-		this.emailVerificationToken = "temporary string"; //emailVerificationToken;
+		this.emailVerificationToken = emailVerificationToken;
 	}
 
 
