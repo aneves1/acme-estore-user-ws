@@ -106,9 +106,7 @@ public class UserServiceImpl implements UserService {
 		}
 		
 		LOGGER.debug("Successfully Loaded user by user name");
-		
-		//return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
-		
+				
 		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), userEntity.getEmailVerificationStatus(), 
 				true, true, true, new ArrayList<>());
 	}

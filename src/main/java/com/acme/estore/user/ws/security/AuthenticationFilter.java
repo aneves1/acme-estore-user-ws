@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.acme.estore.user.ws.SpringApplicationContext;
@@ -39,22 +40,30 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res) throws AuthenticationException {
+		Authentication authentication = null;
 		
 		LOGGER.debug("Attempting to authenticate user");
 		
 		try {
 			UserLoginRequest credentials = new ObjectMapper().readValue(req.getInputStream(), UserLoginRequest.class);
 			
-			return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(), new ArrayList<>()));
+			authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(credentials.getEmail(), credentials.getPassword(), new ArrayList<>()));
 			
+			int i = 0;
+
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage());
 			throw new RuntimeException(e);
-		}
-		finally {
-			LOGGER.debug("Successfully authenticated user");
+		} catch (UsernameNotFoundException e) {
+			LOGGER.error(e.getMessage());
+			throw new RuntimeException(e);
 		}
 		
+		LOGGER.debug("Successfully authenticated user");		
+		
+		return authentication;
+				
 	}
 	
 	@Override

@@ -1,18 +1,25 @@
 package com.acme.estore.user.ws.io.entity;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 
-@Entity(name="user")
+@Entity
+@Table(name="user")
 public class UserEntity implements Serializable {
 	private static final long serialVersionUID = -913091384710493677L;
 	
@@ -44,6 +51,11 @@ public class UserEntity implements Serializable {
 	@OneToMany(mappedBy="userDto", cascade=CascadeType.ALL)
 	private List<AddressEntity> address;
 
+	@ManyToMany(cascade= { CascadeType.PERSIST}, fetch= FetchType.EAGER)
+	@JoinTable(name="user_role_reference",
+			joinColumns=@JoinColumn(name="user_id", referencedColumnName="id"),
+			inverseJoinColumns=@JoinColumn(name="role_id", referencedColumnName="id"))
+	private Collection<RoleEntity> roles;
 
 	public long getId() {
 		return id;
@@ -131,6 +143,16 @@ public class UserEntity implements Serializable {
 
 	public void setAddress(List<AddressEntity> address) {
 		this.address = address;
+	}
+
+
+	public Collection<RoleEntity> getRoles() {
+		return roles;
+	}
+
+
+	public void setRoles(Collection<RoleEntity> roles) {
+		this.roles = roles;
 	}
 	
 	

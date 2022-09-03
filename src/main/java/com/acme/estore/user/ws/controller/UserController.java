@@ -43,6 +43,13 @@ import com.acme.estore.user.ws.response.UserResponse;
 import com.acme.estore.user.ws.service.AddressService;
 import com.acme.estore.user.ws.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 
 @RestController
 @RequestMapping("/user")
@@ -105,7 +112,7 @@ public class UserController {
 		UserDTO userDTO = mapper.map(user, UserDTO.class);
 		
 		UserDTO updatedUser  = userService.updateUser(userId, userDTO);
-		mapper.map(updatedUser, UserResponse.class);
+		mapper.map(updatedUser, response);
 		
 		return response;
 	}
@@ -123,6 +130,19 @@ public class UserController {
 		return response;
 	}
 	
+	// Annotation for SpringDoc OpenAPI for swagger 3
+	@Operation(
+		security = {@SecurityRequirement(name = "bearerAuth")},
+		parameters = {
+		@Parameter (in = ParameterIn.DEFAULT
+			,description = "Page you want to retrieve (0..N)"
+			,name = "page"
+			,content = @Content(schema= @Schema(type = "integer", defaultValue="0"))),
+		@Parameter (in = ParameterIn.DEFAULT
+			,description = "Number of Pages to retrieve"
+			,name = "limit"
+			,content = @Content(schema= @Schema(type = "integer", defaultValue="25")))
+	})
 	@GetMapping(produces= {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
 	public List<UserResponse> getUsers(@RequestParam(value="page", defaultValue="0") int page, 
 			@RequestParam(value="limit", defaultValue="25") int limit) {
